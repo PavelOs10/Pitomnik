@@ -1,11 +1,11 @@
-import pymysql
+from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
 def get_db_connection():
-    return pymysql.connect(
-        host='localhost',
-        user='root',
-        password='9250',
-        db='Друзья человека',
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    db = QSqlDatabase.addDatabase('QMYSQL')
+    db.setHostName('localhost')
+    db.setDatabaseName('Друзья человека')
+    db.setUserName('root')
+    db.setPassword('9250')
+    if not db.open():
+        print("Cannot establish a database connection")
+    return db
