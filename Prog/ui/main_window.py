@@ -1,12 +1,14 @@
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QTableView, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QTableView, QMessageBox, QDialog
 from PyQt5.QtCore import Qt
-from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
+from PyQt5.QtSql import QSqlTableModel
 from .add_animal_dialog import AddAnimalDialog
+from .edit_animal_dialog import EditAnimalDialog
+from data.db_config import get_db_connection, create_tables
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Animal Registry')
+        self.setWindowTitle('Регистрация животных')
 
         self.db = self.connect_to_db()
 
@@ -37,24 +39,25 @@ class MainWindow(QMainWindow):
 
     def connect_to_db(self):
         db = get_db_connection()
-        create_tables()
+        if db.isOpen():
+            create_tables()
         return db
 
     def open_add_animal_dialog(self):
-        dialog = AddAnimalDialog(self)
-        dialog.exec_()
-        
-        self.model.select()
+        if self.db.isOpen():
+            dialog = AddAnimalDialog(self)
+            if dialog.exec_() == QDialog.Accepted:
+                self.model.select()
+        else:
+            QMessageBox.critical(self, "Ошибка", "Нет подключения к базе данных.")
 
     def edit_selected_animal(self):
-        
         selected_index = self.table_view.currentIndex()
         if selected_index.isValid():
-            animal_id = self.model.data(self.model.index(selected_index.row(), 0))  
+            animal_id = self.model.data(self.model.index(selected_index.row(), 0))
             dialog = EditAnimalDialog(animal_id, self)
-            dialog.exec_()
-            
-            self.model.select()
+            if dialog.exec_() == QDialog.Accepted:
+                self.model.select()
         else:
             QMessageBox.warning(self, "Выбор записи", "Пожалуйста, выберите запись для редактирования.")
 
@@ -65,7 +68,6 @@ class MainWindow(QMainWindow):
             if confirm == QMessageBox.Yes:
                 self.model.removeRow(selected_index.row())
                 self.model.submitAll()
-                
                 self.model.select()
         else:
             QMessageBox.warning(self, "Выбор записи", "Пожалуйста, выберите запись для удаления.")

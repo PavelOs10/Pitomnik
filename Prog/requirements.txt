@@ -1,4 +1,4 @@
 PyQt5
 PyQtWebEngine
 PyQt5-sip
-PyMySQL
+SqLite
