@@ -36,13 +36,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def connect_to_db(self):
-        db = QSqlDatabase.addDatabase('QMYSQL')
-        db.setHostName('localhost')
-        db.setDatabaseName('animals_db')
-        db.setUserName('your_username')
-        db.setPassword('your_password')
-        if not db.open():
-            QMessageBox.critical(None, "Database Error", db.lastError().text())
+        db = get_db_connection()
+        create_tables()
         return db
 
     def open_add_animal_dialog(self):

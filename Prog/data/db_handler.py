@@ -1,23 +1,34 @@
 from .db_config import get_db_connection
+from PyQt5.QtSql import QSqlQuery
 
 class DBHandler:
     def __init__(self):
         self.connection = get_db_connection()
     
     def add_animal(self, animal):
-        with self.connection.cursor() as cursor:
-            sql = "INSERT INTO Все_животные (имя, масть, дата_рождения, команды, тип) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(sql, (animal.name, animal.color, animal.birth_date, ', '.join(animal.commands), animal.type))
-            self.connection.commit()
-    
+        query = QSqlQuery()
+        query.prepare("INSERT INTO Все_животные (имя, тип, команды) VALUES (?, ?, ?)")
+        query.addBindValue(animal.name)
+        query.addBindValue(animal.type)
+        query.addBindValue(', '.join(animal.commands))
+        query.exec_()
+
     def get_animal_by_name(self, name):
-        with self.connection.cursor() as cursor:
-            sql = "SELECT * FROM Все_животные WHERE имя = %s"
-            cursor.execute(sql, (name,))
-            return cursor.fetchone()
-    
+        query = QSqlQuery()
+        query.prepare("SELECT * FROM Все_животные WHERE имя = ?")
+        query.addBindValue(name)
+        if query.exec_() and query.next():
+            return {
+                'id': query.value(0),
+                'имя': query.value(1),
+                'тип': query.value(2),
+                'команды': query.value(3)
+            }
+        return None
+
     def update_animal_commands(self, animal_id, new_commands):
-        with self.connection.cursor() as cursor:
-            sql = "UPDATE Все_животные SET команды = %s WHERE id = %s"
-            cursor.execute(sql, (new_commands, animal_id))
-            self.connection.commit()
+        query = QSqlQuery()
+        query.prepare("UPDATE Все_животные SET команды = ? WHERE id = ?")
+        query.addBindValue(new_commands)
+        query.addBindValue(animal_id)
+        query.exec_()

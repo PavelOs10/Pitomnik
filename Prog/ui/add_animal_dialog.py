@@ -24,11 +24,15 @@ class AddAnimalDialog(QDialog):
     def add_animal(self):
         name = self.name_input.text()
         animal_type = self.type_input.text()
-        commands = self.commands_input.text().split(', ')
-        if animal_type.lower() == 'domestic':
-            animal = DomesticAnimal(name, None, None, commands)
+        commands = self.commands_input.text()
+        
+        query = QSqlQuery()
+        query.prepare("INSERT INTO Все_животные (имя, тип, команды) VALUES (?, ?, ?)")
+        query.addBindValue(name)
+        query.addBindValue(animal_type)
+        query.addBindValue(commands)
+        
+        if query.exec_():
+            self.accept()
         else:
-            animal = PackAnimal(name, None, None, commands)
-        registry = Registry()
-        registry.add_animal(animal)
-        self.accept()
+            QMessageBox.critical(self, "Ошибка", "Не удалось добавить животное.")
