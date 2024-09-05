@@ -3,9 +3,9 @@ import pymysql
 def get_db_connection():
     return pymysql.connect(
         host='localhost',
-        user='user',
-        password='password',
-        db='animals_db',
+        user='root',
+        password='9250',
+        db='Друзья человека',
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
